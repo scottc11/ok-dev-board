@@ -16,47 +16,30 @@ void task_controller(void *params)
         switch (action)
         {
         case CTRL_ACTION::ENTER_1VO_CALIBRATION:
-            vTaskSuspend(main_task_handle);
-            suspend_sequencer_task();
-            controller->channels[channel]->initializeCalibration();
-            ctrl_dispatch(CTRL_ACTION::ENTER_VCO_TUNING, channel, 0);
+            vTaskSuspend(main_task_handle); // this doesn't actually solve anything if controller.mode is "VCO_CALIBRATION"
+            suspend_sequencer_task(); // suspend the sequencer task so that the clock doesn't advance while we are calibrating
+            controller->clock->vcoFrequencyDetectionMode = true;
+            HAL_TIM_IC_Stop_IT(&htim2, TIM_CHANNEL_4); // just to be safe before init
+            controller->clock->enableInputCaptureISR();
+            controller->calibrator.initVCOCalibration(controller->channels[channel]); // starts input capture again
             break;
+
         case CTRL_ACTION::EXIT_1VO_CALIBRATION:
-            vTaskDelete(thCalibrate);
-            vTaskDelete(thStartCalibration);
-            for (int i = 0; i < 4; i++)
-            {
-                controller->channels[i]->adc.queueSample = false;
-            }
-            
-            // offload all this shit to a task with a much higher stack size
-            multi_chan_adc_set_sample_rate(&hadc1, &htim3, ADC_SAMPLE_RATE_HZ);
-
             controller->saveCalibrationDataToFlash();
-
+            controller->clock->vcoFrequencyDetectionMode = false;
+            controller->clock->disableInputCaptureISR();
             controller->disableVCOCalibration();
             vTaskResume(main_task_handle);
             resume_sequencer_task();
             break;
+
+        // this event is triggered from the input capture ISR once all capture readings have been collected.
+        case CTRL_ACTION::HANDLE_CAPTURE_EVENT:
+            controller->calibrator.handleInputCapture();
+            break;
             
         case CTRL_ACTION::EXIT_BENDER_CALIBRATION:
             // do something
-            break;
-
-        case CTRL_ACTION::ENTER_VCO_TUNING:
-            xTaskCreate(task_tuner, "tuner", RTOS_STACK_SIZE_MIN, controller->channels[channel], RTOS_PRIORITY_HIGH, &tuner_task_handle);
-            xTaskCreate(taskObtainSignalFrequency, "detector", RTOS_STACK_SIZE_MIN, controller->channels[channel], RTOS_PRIORITY_MED, &thStartCalibration);
-            break;
-
-        case CTRL_ACTION::EXIT_VCO_TUNING:
-            vTaskDelete(tuner_task_handle);
-            controller->display->setColumn(7, PWM::PWM_HIGH, false);
-            controller->display->setColumn(8, PWM::PWM_HIGH, false);
-            controller->display->flash(3, 200);
-            controller->display->clear();
-            controller->display->fill(30, true);
-            controller->mode = GlobalControl::VCO_CALIBRATION;
-            xTaskCreate(taskCalibrate, "calibrate", RTOS_STACK_SIZE_MIN, controller->channels[controller->selectedChannel], RTOS_PRIORITY_MED, &thCalibrate);
             break;
 
         case CTRL_ACTION::ADC_SAMPLING_PROGRESS:

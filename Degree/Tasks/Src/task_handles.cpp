@@ -31,3 +31,10 @@ void ctrl_dispatch(CTRL_ACTION action, uint8_t channel, uint16_t data) {
     uint32_t dispatch = (data << 16) | (channel << 8) | (action);
     xTaskNotify(thController, dispatch, eSetValueWithOverwrite);
 }
+
+void ctrl_dispatch_ISR(CTRL_ACTION action, uint8_t channel, uint16_t data) {
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    uint32_t dispatch = (data << 16) | (channel << 8) | (action);
+    xTaskNotifyFromISR(thController, dispatch, eSetValueWithOverwrite, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}

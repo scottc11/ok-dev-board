@@ -35,6 +35,7 @@ public:
     uint16_t ticksPerPulse; // how many TIM2 ticks for one PPQN
     uint8_t stepsPerBar;    // value represents the number of quarter notes per bar (ie. 3/4, 4/4, 5/4, 6/4, 7/4)
     bool externalInputMode;
+    bool vcoFrequencyDetectionMode;
 
     Callback<void()> tickCallback;           // this callback gets executed at a frequency equal to tim1_freq
     Callback<void()> barResetCallback;       // executes when clock.step exceeds the set time signature (ie. one bar)

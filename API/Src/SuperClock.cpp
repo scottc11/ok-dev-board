@@ -161,6 +161,11 @@ void SuperClock::setPulseFrequency(uint32_t ticks)
  */
 void SuperClock::handleInputCaptureCallback()
 {
+    if (vcoFrequencyDetectionMode) {
+        if (input_capture_callback) input_capture_callback();
+        return;
+    }
+    
     // almost always, there will need to be at least 1 pulse not yet executed prior to an input capture, so you must execute all remaining until
     if (pulse < PPQN - 1)
     {
@@ -178,8 +183,6 @@ void SuperClock::handleInputCaptureCallback()
     this->setPulseFrequency(inputCapture / PPQN);
     this->pulse = 0;
     this->handleOverflowCallback();
-
-    if (input_capture_callback) input_capture_callback();
 }
 
 void SuperClock::enableInputCaptureISR()

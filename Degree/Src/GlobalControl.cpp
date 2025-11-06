@@ -74,6 +74,7 @@ void GlobalControl::init() {
     clock->attachResetCallback(callback(this, &GlobalControl::resetSequencer));
     clock->attachBarResetCallback(callback(this, &GlobalControl::handleBarReset));
     clock->attachPPQNCallback(callback(this, &GlobalControl::advanceSequencer)); // always do this last
+    clock->attachInputCaptureCallback(callback(&calibrator, &Calibrator::captureCallback));
     clock->disableInputCaptureISR(); // pollTempoPot() will re-enable should pot be in teh right position
     currTempoPotValue = tempoPot.read_u16();
     handleTempoAdjustment(currTempoPotValue);
@@ -345,7 +346,14 @@ void GlobalControl::handleButtonPress(int pad)
 
         if (gestureFlag)
         {
-            this->handleChannelGesture(callback(this, &GlobalControl::resetCalibration1VO));
+            for (int i = 0; i < CHANNEL_COUNT; i++)
+            {
+                if (touchPads->padIsTouched(i, currTouched))
+                {
+                    this->resetCalibration1VO(i);
+                }
+            }
+            this->saveCalibrationDataToFlash(); // change this to just save calibration data
         } else {
             this->deleteChannelConfigDataFromFlash();
         }
@@ -359,16 +367,7 @@ void GlobalControl::handleButtonPress(int pad)
 
     case Gestures::CALIBRATE_1VO:
         if (recordEnabled == true) break;
-
-        actionExitFlag = ACTION_EXIT_STAGE_1; // set exit flag
-        mode = ControlMode::VCO_CALIBRATION;
-        suspend_sequencer_task();
-        display->enableBlink();
-        display->fill(30, true);
-        actionCounter = 0; // reset
-        actionCounterLimit = 15;
-        actionTimer.attachCallback(callback(this, &GlobalControl::pressHold), 100, true);
-        actionTimer.start();
+        this->enableVCOCalibration();
         break;
     
     case Gestures::ENTER_HARDWARE_TEST:
@@ -790,7 +789,7 @@ void GlobalControl::resetCalibration1VO(int chan)
 {
     // basically just reset a channels voltage map to default and then save as usual
     channels[chan]->output.resetVoltageMap();
-    this->saveCalibrationDataToFlash(); // change this to just save calibration data
+    // this->saveCalibrationDataToFlash(); // change this to just save calibration data
 }
 
 /**
@@ -881,6 +880,19 @@ void GlobalControl::handleFreeze(bool freeze) {
     {
         dispatch_sequencer_event(CHAN::ALL, SEQ::FREEZE, freeze);
     }
+}
+
+void GlobalControl::enableVCOCalibration() {
+    int touchedChannel = getTouchedChannel();
+    mode = ControlMode::VCO_CALIBRATION;
+    suspend_sequencer_task();
+    display->enableBlink();
+    display->fill(30, true);
+    for (int i = 0; i < 16; i++)
+    {
+        display->setSpiralLED(touchedChannel, i, 255, false);
+    }
+    ctrl_dispatch(CTRL_ACTION::ENTER_1VO_CALIBRATION, touchedChannel, 0);
 }
 
 void GlobalControl::disableVCOCalibration() {

@@ -100,6 +100,7 @@ Degree/Src/Bender.cpp \
 Degree/Src/Degrees.cpp \
 Degree/Src/Display.cpp \
 Degree/Src/MultiChanADC.cpp \
+Degree/Src/Calibrator.cpp \
 Degree/Src/SuperSeq.cpp \
 Degree/Src/TouchChannel.cpp \
 Degree/Src/GlobalControl.cpp \

@@ -19,7 +19,6 @@
                 "init",
                 "reset init"
             ],
-            "runToMain": true,
             "svdFile": "./.vscode/STM32F446.svd",
             "preLaunchTask": "Build"
         }
