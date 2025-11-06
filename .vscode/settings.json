@@ -1,5 +1,11 @@
 {
     "files.associations": {
+        "*.json.liquid": "json",
+        "*.yaml.liquid": "yaml",
+        "*.md.liquid": "markdown",
+        "*.js.liquid": "liquid-javascript",
+        "*.css.liquid": "liquid-css",
+        "*.scss.liquid": "liquid-scss",
         "main.h": "c",
         "stm32f4xx_hal.h": "c",
         "stm32f4xx_hal_conf.h": "c",
@@ -70,6 +76,7 @@
         "condition_variable": "cpp",
         "mutex": "cpp",
         "ranges": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "stdio.h": "c"
     }
 }

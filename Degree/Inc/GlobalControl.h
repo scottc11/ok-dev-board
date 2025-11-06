@@ -15,6 +15,7 @@
 #include "SuperClock.h"
 #include "Display.h"
 #include "AnalogHandle.h"
+#include "Calibrator.h"
 
 #define ACTION_EXIT_CLEAR   0
 #define ACTION_EXIT_STAGE_1 1
@@ -74,7 +75,7 @@ namespace DEGREE {
         AnalogHandle tempoPot;
         DigitalOut tempoLED;
         DigitalOut tempoGate;
-
+        Calibrator calibrator;
         SoftwareTimer actionTimer;   // triggers a callback for handling timed gestures
         int actionCounter;           // this value gets incremented by timer when a pad is touched, and resets to 0 when released
         int actionCounterLimit;      // 
@@ -122,6 +123,7 @@ namespace DEGREE {
         void handleButtonInterrupt();
         void handleTouchInterrupt();
 
+        void enableVCOCalibration();
         void disableVCOCalibration();
         void pressHold();
 

@@ -32,6 +32,7 @@ public:
     uint16_t ticksPerStep;  // how many TIM2 ticks per one step / quarter note
     uint16_t ticksPerPulse; // how many TIM2 ticks for one PPQN
     bool externalInputMode;
+    bool vcoFrequencyDetectionMode;
 
     Callback<void()> tickCallback;           // this callback gets executed at a frequency equal to tim1_freq
     Callback<void()> input_capture_callback; // this callback gets executed every on the rising edge of external input

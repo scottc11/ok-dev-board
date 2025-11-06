@@ -24,7 +24,8 @@ enum CTRL_ACTION
     EXIT_BENDER_CALIBRATION = 2,
     ENTER_VCO_TUNING = 3,
     EXIT_VCO_TUNING = 4,
-    ADC_SAMPLING_PROGRESS = 5,
+    HANDLE_CAPTURE_EVENT = 5,
+    ADC_SAMPLING_PROGRESS = 6,
     CONFIG_SAVE,
     CONFIG_RESET
 };
@@ -34,3 +35,4 @@ CTRL_ACTION noti_get_command(uint32_t notification);
 uint8_t noti_get_channel(uint32_t notification);
 
 void ctrl_dispatch(CTRL_ACTION action, uint8_t channel, uint16_t data);
+void ctrl_dispatch_ISR(CTRL_ACTION action, uint8_t channel, uint16_t data);
