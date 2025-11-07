@@ -27,6 +27,7 @@ void task_controller(void *params)
         case CTRL_ACTION::EXIT_1VO_CALIBRATION:
             controller->saveCalibrationDataToFlash();
             controller->clock->vcoFrequencyDetectionMode = false;
+            HAL_TIM_IC_Start_IT(&htim2, TIM_CHANNEL_4);
             controller->clock->disableInputCaptureISR();
             controller->disableVCOCalibration();
             vTaskResume(main_task_handle);

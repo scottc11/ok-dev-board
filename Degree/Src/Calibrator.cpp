@@ -130,7 +130,8 @@ void Calibrator::handleInputCapture()
 
         // apply linear interpolation to the calibration data
         this->interpolateTuningTable();
-        
+
+        __HAL_TIM_SET_ICPRESCALER(&htim2, TIM_CHANNEL_4, TIM_ICPSC_DIV1);
         // exit the calibration process
         ctrl_dispatch(CTRL_ACTION::EXIT_1VO_CALIBRATION, 0, 0);
     }
